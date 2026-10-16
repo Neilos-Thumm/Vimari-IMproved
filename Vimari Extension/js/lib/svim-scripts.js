@@ -65,88 +65,12 @@ function animateScrollTo(left, top) {
     animationFrame = window.requestAnimationFrame(frame);
 }
 
-// --- Vimium-style continuous scrolling -------------------------------------
-// Ported from Vimium's CoreScroller (content_scripts/scroller.js, MIT):
-//  - constant speed instead of an ease-out curve, so motion doesn't "pulse";
-//  - while a key is held, one animator keeps scrolling until keyup, and the
-//    OS key-repeat events are ignored instead of restarting the animation.
-const keyState = { code: null, lastEvent: null, time: 0 };
-
-document.addEventListener('keydown', function(e) {
-    keyState.code = e.code;
-    if (!e.repeat) keyState.time += 1;
-    keyState.lastEvent = e;
-}, true);
-
-document.addEventListener('keyup', function(e) {
-    if (e.code === keyState.code) {
-        keyState.code = null;
-        keyState.time += 1;
-    }
-}, true);
-
-window.addEventListener('blur', function() {
-    keyState.code = null;
-    keyState.time += 1;
-});
-
-function continuousScrollBy(x, y) {
-    const horizontal = !y;
-    const signed = horizontal ? x : y;
-    const amount = Math.abs(signed);
-    if (!amount) return;
-
-    // Key repeat: the animator started by the first keydown is still running.
-    if (keyState.lastEvent && keyState.lastEvent.repeat) return;
-
-    const sign = Math.sign(signed);
-    const activation = ++keyState.time;
-    const keyStillDown = function() {
-        return keyState.time === activation && keyState.code !== null;
-    };
-
-    // Same duration rule as Vimium, with scrollDuration (ms) as the minimum.
-    const duration = Math.max(scrollDurationMs(), 20 * Math.log(amount));
-    let scrolled = 0;
-    let previous = null;
-
-    function frame(timestamp) {
-        if (previous === null || timestamp === previous) {
-            previous = timestamp;
-            window.requestAnimationFrame(frame);
-            return;
-        }
-        const elapsed = timestamp - previous;
-        previous = timestamp;
-
-        let delta = Math.ceil(amount * (elapsed / duration));
-        if (!keyStillDown()) {
-            delta = Math.max(0, Math.min(delta, amount - scrolled));
-        }
-        if (!delta) return;
-
-        const before = horizontal ? window.scrollX : window.scrollY;
-        window.scrollBy({
-            left: horizontal ? sign * delta : 0,
-            top: horizontal ? 0 : sign * delta,
-            behavior: 'instant'
-        });
-        const after = horizontal ? window.scrollX : window.scrollY;
-        if (after === before) return; // reached the edge of the page
-
-        scrolled += delta;
-        window.requestAnimationFrame(frame);
-    }
-    window.requestAnimationFrame(frame);
-}
-
 function customScrollBy(x, y) {
-    if (smoothOn() && scrollDurationMs() > 0) {
-        continuousScrollBy(x, y);
-        return;
-    }
-    // Instant jump, or Safari's native smooth scroll when scrollDuration is 0.
-    window.scrollBy({ left: x, top: y, behavior: smoothOn() ? 'smooth' : 'instant' });
+    // While a scroll is still animating (e.g. holding j), add to where it was
+    // heading rather than where it is now, so repeated presses don't lag behind.
+    const baseX = pendingTarget ? pendingTarget.x : window.scrollX;
+    const baseY = pendingTarget ? pendingTarget.y : window.scrollY;
+    animateScrollTo(baseX + x, baseY + y);
 }
 
 function scrollToPageTop() {
