@@ -6,7 +6,7 @@
   "openTabUrl": "https://google.com/",
   "modifier": "",
   "smoothScroll": true,
-  "scrollDuration": 25,
+  "scrollDuration": 100,
   "transparentBindings": true,
   "bindings": {
       "hintToggle": "f",
