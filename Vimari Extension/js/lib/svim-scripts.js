@@ -4,44 +4,42 @@
  * Assumes global variable: settings.
  */
 
-let animationFrame = null;
+let animationFrame = null; // unused now; kept so nothing else breaks if it references it
+
+// 'instant' overrides a page's `scroll-behavior: smooth` CSS (e.g. nileparun.com);
+// 'smooth' hands the animation to Safari's own scroller, which renders content
+// as it goes (the old per-frame scrollBy loop left YouTube blank/black).
+function scrollBehavior() {
+    return (settings && settings.smoothScroll) ? 'smooth' : 'instant';
+}
 
 function customScrollBy(x, y) {
-    // If smooth scroll is off then use regular scroll
-    if (settings == undefined || settings.smoothScroll === undefined || !settings.smoothScroll) {
-        window.scrollBy(x, y);
-        return;
-    }
-    window.cancelAnimationFrame(animationFrame);
+    window.scrollBy({ left: x, top: y, behavior: scrollBehavior() });
+}
 
-    // Smooth scroll
-    let i = 0;
-    let delta = 0;
+function scrollToPageTop() {
+    window.scrollTo({ top: 0, behavior: scrollBehavior() });
+}
 
-    // Ease function
-    function easeOutExpo(t, b, c, d) {
-        return c * (-Math.pow(2, -10 * t / d) + 1) + b;
-    }
+// G: jump to the bottom. On infinite feeds (YouTube) the page grows after the
+// jump, so follow it a few times, stopping early if the user scrolls away.
+function scrollToPageBottom() {
+    const scroller = document.scrollingElement || document.documentElement;
+    const maxFollows = 3;
+    let follows = 0;
+    let lastHeight = scroller.scrollHeight;
 
-    // Animate the scroll
-    function animLoop() {
-        const toScroll = Math.round(easeOutExpo(i, 0, y, settings.scrollDuration) - delta);
-        if (toScroll !== 0) {
-            if (y) {
-                window.scrollBy(0, toScroll);
-            } else {
-                window.scrollBy(toScroll, 0);
-            }
+    window.scrollTo({ top: lastHeight, behavior: scrollBehavior() });
+
+    function follow() {
+        const height = scroller.scrollHeight;
+        const nearBottom = window.scrollY + window.innerHeight >= lastHeight - window.innerHeight;
+        if (height > lastHeight && nearBottom && follows < maxFollows) {
+            follows += 1;
+            lastHeight = height;
+            window.scrollTo({ top: height, behavior: 'instant' });
+            setTimeout(follow, 800);
         }
-
-        if (i < this.settings.scrollDuration) {
-            animationFrame = window.requestAnimationFrame(animLoop);
-        }
-
-        delta = easeOutExpo(i, 0, (x || y), settings.scrollDuration);
-        i += 1;
     }
-
-    // Start scroll
-    animLoop();
+    setTimeout(follow, 800);
 }

@@ -80,10 +80,10 @@ var actionMap = {
 		function() { customScrollBy(0, window.innerHeight / -2); },
 
 	'goToPageBottom':
-		function() { customScrollBy(0, document.body.scrollHeight); },
+		function() { scrollToPageBottom(); },
 
 	'goToPageTop':
-		function() { customScrollBy(0, -document.body.scrollHeight); },
+		function() { scrollToPageTop(); },
 
 	'goToFirstInput':
 		function() { goToFirstInput(); }
