@@ -495,7 +495,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MARKETING_VERSION = 2.1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = net.televator.Vimari.SafariExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.parun.Vimari.SafariExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -520,7 +520,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MARKETING_VERSION = 2.1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = net.televator.Vimari.SafariExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.parun.Vimari.SafariExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -546,7 +546,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 2.1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = net.televator.Vimari;
+				PRODUCT_BUNDLE_IDENTIFIER = com.parun.Vimari;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
@@ -571,7 +571,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 2.1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = net.televator.Vimari;
+				PRODUCT_BUNDLE_IDENTIFIER = com.parun.Vimari;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
