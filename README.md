@@ -1,148 +1,109 @@
-<img align="left" width=160 style="padding: 10px" src="assets/logo.svg"></img>
+# Vimari 
 
-## Vimari
-_Keyboard Shortcuts extension for Safari_
+Vim-style keyboard navigation for Safari: scroll with `j`/`k`, follow links with `f`, switch tabs with `w`/`q`, all without touching the mouse.
 
-[![Download on the Mac App Store](assets/Download_on_the_Mac_App_Store_Badge_US.svg)](https://apps.apple.com/us/app/vimari/id1480933944?ls=1&mt=12)
+This is a personal fork of [televator-apps/vimari](https://github.com/televator-apps/vimari), which is itself a lightweight Safari port of [Vimium](https://github.com/philc/vimium). Upstream Vimari has not been updated since April 2021; this fork fixes scrolling problems that show up in current versions of Safari.
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/televator-apps/vimari)
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/televator-apps/vimari?include_prereleases&label=pre%20release)
+## What's different from upstream
 
-Vimari is a Safari extension that provides vim style keyboard based navigation.
-This lets you control Safari from your keyboard instead of having to use your mouse to open links, scroll, etc.
-The code is heavily based on [vimium](https://github.com/philc/vimium), a
-Chrome extension that provides much more extensive features.
+| Area | Upstream Vimari | This fork |
+| --- | --- | --- |
+| Scroll animation | ~25 tiny `scrollBy` calls per keypress (about 400 ms) | One time-based animation, `scrollDuration` ms long (default 100 ms) |
+| Pages with `scroll-behavior: smooth` CSS | `gg`/`G`/`j`/`k` stall or stop short | Every frame uses `behavior: 'instant'`, so page CSS can't interfere |
+| Holding `j`/`k` | Each key repeat restarts the animation | Repeats add to where the scroll is already heading, so it doesn't lag |
+| `G` on infinite feeds (e.g. YouTube) | Lands on a "bottom" that immediately moves | Follows the page down up to 3 times as more content loads |
+| Native option | None | `scrollDuration: 0` uses Safari's own smooth scroll |
+| Bundle IDs | `net.televator.Vimari` | `com.parun.Vimari` (so it can be signed with a personal Apple ID) |
+| Minimum macOS | 10.12 (no longer builds) | 11.0 |
 
-Vimari attempts to provide a lightweight port of vimium to Safari, taking the
-best components of vimium and adapting them to Safari.
+All changes are in `Vimari Extension/js/lib/svim-scripts.js`, `Vimari Extension/js/injected.js`, `Vimari Extension/json/defaultSettings.json`, `Vimari/ViewController.swift` and `Vimari.xcodeproj/project.pbxproj`. Run `git log` to see each change as its own commit.
 
-<img src="assets/screenshot.png"></img>
+## Building and installing
 
-## Releases
+Requires a Mac with Xcode and a free Apple ID.
 
-### Safari 12 and above
+1. Clone this repo and open `Vimari.xcodeproj` in Xcode.
+2. Click the **Vimari** project at the top of the sidebar. For **both** targets (**Vimari** and **Vimari Extension**), open **Signing & Capabilities** and set **Team** to your own Apple ID.
+   - If you are not me, also change both **Bundle Identifier** values to your own reverse-domain prefix, and update `extensionIdentifier` in `Vimari/ViewController.swift` to match the extension's new ID. Apple IDs can't sign apps whose bundle IDs are registered to someone else.
+3. Make sure the scheme next to ▶ says **Vimari › My Mac**, then press **Cmd+R**.
+4. **Product → Show Build Folder in Finder → Products → Debug**, copy `Vimari.app` into **Applications**, and open it once.
+5. In **Safari → Settings → Extensions**, tick **Vimari** and allow it on every website. Reload any open tabs.
 
-[![Download on the Mac App Store](assets/Download_on_the_Mac_App_Store_Badge_US.svg)](https://apps.apple.com/us/app/vimari/id1480933944?ls=1&mt=12)
+If Vimari doesn't appear in Safari's list, enable **Develop → Developer Settings → Allow unsigned extensions** (turn on **Show features for web developers** under Safari → Settings → Advanced first).
 
-### Safari 11 and below (DEPRECATED)
- - [v1.13](https://github.com/guyht/vimari/releases/tag/v1.13)
- - [v1.12](https://github.com/guyht/vimari/releases/tag/v1.12)
- - [v1.11](https://github.com/guyht/vimari/releases/tag/v1.11)
- - [v1.10](https://github.com/guyht/vimari/releases/tag/v1.10)
- - [v1.9](https://github.com/guyht/vimari/releases/tag/v1.9)
+Remove the App Store version of Vimari first if you have it, or the two copies will fight over the same keys.
 
-## Installation
+## Configuration
 
-### Safari 12 and above (macOS Mojave or above)
+Open the Vimari app and use the edit-config button to change `userSettings.json`. Reload your tabs afterwards.
 
-#### Mac App Store
+The first time it runs, Vimari copies `Vimari Extension/json/defaultSettings.json` to create `userSettings.json`. After that it never re-reads the defaults file, so if you change the defaults in the repo, press the reset-config button in the Vimari app to pick them up.
 
-1. [Download Vimari](https://apps.apple.com/us/app/vimari/id1480933944?ls=1&mt=12) for free from the Mac App Store
-2. Launch Vimari.app
-3. Click "Open in Safari Extensions Preferences", Safari's Extension Preferences should open
-4. Make sure that the checkbox for the Vimari extension is ticked
-5. Go back to Vimari.app and press the reload button to check the status of the app. If it says "Enabled" then it is ready.
-6. You may need to relaunch Safari for the extension to work
+### Scrolling settings
 
-#### Prebuilt binaries
+| Setting | Effect |
+| --- | --- |
+| `smoothScroll: false` | Instant jumps, no animation |
+| `smoothScroll: true`, `scrollDuration: 100` | Fork's own animation, 100 ms per step (lower is snappier, e.g. 60–80) |
+| `smoothScroll: true`, `scrollDuration: 0` | Safari's native smooth scroll: renders heavy pages best but is slower and fixed speed |
+| `scrollSize` | Pixels per `j`/`k` press (default 150) |
 
-1. Download the [latest version](https://github.com/guyht/vimari/releases/latest) of Vimari
-2. Unzip it
-3. Move it to your `/Applications` folder
-4. Launch Vimari.app
-5. Click "Open in Safari Extensions Preferences...", Safari's Extension Preferences should open
-6. Make sure that the checkbox for the Vimari extension is ticked
-7. Go back to Vimari.app and press the reload button to check the status of the app. If it says "Enabled" then it is ready.
-8. You may need to relaunch Safari for the extension to work
+### Other settings
 
+| Setting | Effect |
+| --- | --- |
+| `openTabUrl` | Page opened by `t` |
+| `excludedUrls` | Comma-separated sites where Vimari is disabled, e.g. `youtube.com,github.com` |
+| `linkHintCharacters` | Characters used for `f` link labels |
+| `detectByCursorStyle` | Also treat `cursor: pointer` elements as links (slower on big pages; off by default) |
+| `transparentBindings` | Keys Vimari doesn't use pass through to the page |
+| `modifier` | Key that must be held with every binding (blank = none) |
 
+## Default key bindings
 
-### Safari 11 (legacy Safari Extension method)
+### In-page navigation
 
-[Download the Vimari 1.13](https://github.com/guyht/vimari/releases/tag/v1.13) and double-click
-the file.
+| Key | Action |
+| --- | --- |
+| `f` / `F` | Show link hints (open in current tab / new tab) |
+| `j` / `k` | Scroll down / up |
+| `h` / `l` | Scroll left / right |
+| `d` / `u` | Scroll down / up half a page |
+| `g g` | Go to top of page |
+| `G` | Go to bottom of page |
+| `g i` | Focus the first text input |
 
-## Usage
+### Tabs and history
 
-### Settings
-**Modifier** - Modifier key to hold down with your action key. If
-you leave it blank you don't need to hold down anything (default
-setting).
+| Key | Action |
+| --- | --- |
+| `H` / `L` | History back / forward |
+| `r` | Reload |
+| `K` / `J` | Next / previous tab |
+| `x` | Close tab |
+| `t` | New tab (opens `openTabUrl`) |
+| `y t` | Duplicate tab |
 
-**Excluded URLs** - Comma separated list of website URLs you don't want
-to use vimari with. To exclude GitHub for example, provide the value
-`github.com` or `http://github.com`. It's smart and should handle all
-possible domain cases.
+### Modes
 
-**Link Hint Characters** - Allowed characters to be used when generating
-link shortcuts.
+| Key | Action |
+| --- | --- |
+| `i` | Insert mode: Vimari ignores keys so the page gets them |
+| `Esc` or `Ctrl+[` | Back to normal mode |
 
-**Extra detection by cursor style** - Detect clickable links by looking
-for HTML elements having cursor style set to "pointer".
+Bindings can be changed under `"bindings"` in the config. A binding can be a single key, a sequence (`"g g"`), a modifier combo (`"shift+g"`), or a list of alternatives (`["g g", "shift+k"]`).
 
-**Scroll Size** - How much each scroll will move on the page.
+## Known limitations
 
-`Vimari v2.1+`
+- **Safari's start page:** Safari doesn't let any extension run on its built-in start page (Favourites / Frequently Visited). Set **Safari → Settings → General → New windows/tabs open with: Homepage** and point Homepage at a real URL to get Vimari on new tabs.
+- **Heavy pages with the animation on:** On pages like YouTube, Safari may leave blank or black areas while script-driven scrolling moves the page. Set `scrollDuration` to `0` to use Safari's native smooth scroll instead, which renders properly.
+- **Inner scroll areas:** Web apps that scroll an inner box instead of the page (ChatGPT, Claude, and similar) don't scroll with `j`/`k`/`gg`/`G`.
+- **Reader mode:** Vimari can't run inside Safari's Reader view.
 
-**Smooth Scroll** - Scroll smoothly through the page.
+## Privacy
 
- **Normal vs Insert mode** - Isolate website keybindings from the
-Vimari keybindings. In normal mode you can use the Vimari keybindings
-while in insert mode you can use the websites own keybindings.
-
-**Transparent Bindings** - Full keybinding isolation might not
-be your style, instead the transparent bindings setting (when enabled)
-allows you to use all **non-Vimari-bound** keys to interact with the web
-page as if you were in insert mode.
-
-**Multiple Bindings** - You can bind multiple keybindings to a Vimari
-action. This is done by specifying an array of bindings in the 
-configuration file, like so: `"goToPageTop": ["g g", "shift+k"]`.
-
-
-### Keyboard Bindings
-
-These bindings are the ones set by default, however you are able to change them in the settings.
-
-#### In-page navigation
-    f       Toggle links
-    F       Toggle links (open link in new tab)
-    k       Scroll up
-    j       Scroll down
-    h       Scroll left
-    l       Scroll right
-    u       Scroll up half page
-    d       Scroll down half page
-    g g     Go to top of page
-    G       Go to bottom of page
-    g i     Go to first input
-
-#### Page/Tab navigation
-    H       History back
-    L       History forward
-    r       Reload
-    w       Next tab
-    q       Previous tab
-    x       Close current tab
-    t       Open new tab
-
-`Vimari v2.1+`
-
-#### Vimari Modes
-    i       Enter insert mode
-    ESC     Enter normal mode
-    CTRL+[  Enter normal mode
-    
-### Tips & Tricks
-
-Vimari is built as a Safari Extension, this poses some limits on what is possible through the extension. However default Safari shortcuts can help you keep your hands at the keyboard. Some helpful ones are listed here:
-
-- **Focus URL Bar** <kbd>⌘</kbd><kbd>l</kbd> - This is a feature not available in Vimari, it is also helpful where extensions are not loaded (for example on `topsites://`). By focusing the URL Bar you can go to a website where the extension is loaded.
-
-- **Reader mode** <kbd>⇧</kbd><kbd>⌘</kbd><kbd>R</kbd> - Currently Vimari does not support entering Reader mode (due to API limitations), also navigation inside reader mode (for example using <kbd>j</kbd> or <kbd>k</kbd>) is not supported.
-
-- **Re-open last closed tab** <kbd>⇧</kbd><kbd>⌘</kbd><kbd>T</kbd> - Allows you to reopen a recently closed tab.
+The extension makes no network requests. It has no `fetch`, `XMLHttpRequest` or `URLSession` calls. It does request access to every website, because it needs to listen for keys on every page.
 
 ## License
 
-Copyright (C) 2011 Guy Halford-Thompson. See [LICENSE](LICENSE) for details.
+MIT, same as upstream. See [LICENSE](LICENSE). Original copyright © 2011 Guy Halford-Thompson and the Vimari contributors. Parts of the scrolling code come from [sVim](https://github.com/flipxfx/sVim) and [Vimium](https://github.com/philc/vimium).
